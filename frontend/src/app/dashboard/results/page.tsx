@@ -29,7 +29,11 @@ function ResultsContent() {
 
   useEffect(() => {
     const fetchConversation = async () => {
-      if (!accessToken || !conversationId) return;
+      if (!accessToken || !conversationId) {
+        setLoading(false);
+        if (!conversationId) setError('No travel plan ID provided.');
+        return;
+      }
 
       try {
         const history = await getTravelHistory(accessToken);
