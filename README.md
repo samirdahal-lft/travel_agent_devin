@@ -23,7 +23,7 @@ AI-powered travel planning assistant.
 - response (text) - AI's travel plan response
 - created_at (timestamp)
 
-## Setup
+## Setup to run
 1. Copy `.env.example` to `.env` and fill in keys
 2. Backend: `cd backend && pip install -r requirements.txt && uvicorn main:app --reload`
 3. Frontend: `cd frontend && pip install -r requirements.txt && streamlit run app.py`
