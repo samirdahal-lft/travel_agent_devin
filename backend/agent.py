@@ -133,7 +133,7 @@ Please create a comprehensive travel plan based on the above query and search re
 
     # Step 3: Generate the plan using Gemini
     model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash",
+        model_name="gemini-2.5-flash",
         system_instruction=system_prompt,
     )
 

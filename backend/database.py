@@ -41,7 +41,7 @@ def create_user_record(user_id: str, email: str) -> dict:
     client = get_supabase_admin_client()
     result = (
         client.table("users")
-        .insert({"id": user_id, "email": email})
+        .insert({"id": user_id, "auth_id": user_id, "email": email})
         .execute()
     )
     return result.data[0] if result.data else {}
