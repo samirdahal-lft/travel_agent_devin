@@ -47,6 +47,31 @@ def create_user_record(user_id: str, email: str) -> dict:
     return result.data[0] if result.data else {}
 
 
+def ensure_user_exists(user_id: str, email: str) -> None:
+    """Ensure a user record exists in the users table.
+
+    If the user was created via client-side Supabase Auth (e.g. the Next.js
+    frontend), the users table may not have a corresponding row yet. This
+    function creates one if it is missing, preventing foreign-key violations
+    when saving conversations.
+
+    Args:
+        user_id: The user's UUID from Supabase Auth.
+        email: The user's email address.
+    """
+    client = get_supabase_admin_client()
+    existing = (
+        client.table("users")
+        .select("id")
+        .eq("id", user_id)
+        .execute()
+    )
+    if not existing.data:
+        client.table("users").insert(
+            {"id": user_id, "auth_id": user_id, "email": email}
+        ).execute()
+
+
 def save_conversation(user_id: str, query: str, response: str) -> dict:
     """Save a conversation (travel query and AI response) to the database.
 

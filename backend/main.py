@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from agent import generate_travel_plan
 from auth import get_current_user, login_user, signup_user
 from config import settings
-from database import create_user_record, get_user_conversations, save_conversation
+from database import create_user_record, ensure_user_exists, get_user_conversations, save_conversation
 from models import (
     AuthResponse,
     ConversationHistory,
@@ -161,6 +161,10 @@ async def create_travel_plan(
     try:
         # Generate the travel plan using AI
         plan = generate_travel_plan(request.query)
+
+        # Ensure the user record exists in the users table (handles
+        # users who signed up via the frontend's client-side Supabase Auth)
+        ensure_user_exists(current_user["user_id"], current_user["email"])
 
         # Save the conversation to the database
         conversation = save_conversation(
