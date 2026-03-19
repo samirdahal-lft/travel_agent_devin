@@ -3,13 +3,25 @@
  *
  * Auth tokens and user info are persisted in localStorage and a cookie so
  * that the Next.js middleware can gate protected routes.
+ *
+ * State is shared across all components via React context so that the
+ * Navbar (and any other consumer) re-renders immediately when the user
+ * logs in, signs up, or signs out.
  */
 
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { login as apiLogin, signup as apiSignup } from '@/services/auth';
-import { AuthUser } from '@/types';
+import { AuthResponse, AuthUser } from '@/types';
 
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
@@ -34,7 +46,18 @@ function loadAuth(): { token: string | null; user: AuthUser | null } {
   return { token, user };
 }
 
-export function useAuth() {
+interface AuthContextValue {
+  user: AuthUser | null;
+  loading: boolean;
+  accessToken: string | null;
+  login: (email: string, password: string) => Promise<AuthResponse>;
+  signup: (email: string, password: string) => Promise<AuthResponse>;
+  signOut: () => void;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -60,9 +83,6 @@ export function useAuth() {
 
   const signup = useCallback(async (email: string, password: string) => {
     const res = await apiSignup({ email, password });
-    // If the backend returns an access_token, persist the session.
-    // Some Supabase projects require email verification before issuing a
-    // token, so the token may be empty.
     if (res.access_token) {
       const authUser: AuthUser = { id: res.user_id, email: res.email };
       persistAuth(res.access_token, authUser);
@@ -78,5 +98,18 @@ export function useAuth() {
     setAccessToken(null);
   }, []);
 
-  return { user, loading, accessToken, login, signup, signOut };
+  const value = useMemo<AuthContextValue>(
+    () => ({ user, loading, accessToken, login, signup, signOut }),
+    [user, loading, accessToken, login, signup, signOut],
+  );
+
+  return <AuthContext value={value}>{children}</AuthContext>;
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error('useAuth must be used within an <AuthProvider>');
+  }
+  return ctx;
 }
