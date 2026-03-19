@@ -1,5 +1,7 @@
 /**
  * Signup form component with validation and error handling.
+ *
+ * Registers users via the FastAPI backend's /auth/signup endpoint.
  */
 
 'use client';
@@ -7,7 +9,7 @@
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Alert from '@/components/ui/Alert';
@@ -23,6 +25,7 @@ export default function SignupForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { signup } = useAuth();
   const router = useRouter();
 
   const getFieldError = (field: string): string | undefined =>
@@ -41,27 +44,23 @@ export default function SignupForm() {
     clientLogger.info('Signup attempt', { email });
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) {
-        clientLogger.error('Signup failed', { error: error.message });
-        setServerError(error.message);
-        return;
-      }
+      const res = await signup(email, password);
 
       clientLogger.info('Signup successful', { email });
-      setSuccessMessage(
-        'Account created successfully! Please check your email to verify your account, then log in.'
-      );
 
-      // Redirect to login after a short delay
-      setTimeout(() => {
-        router.push('/login');
-      }, 3000);
+      if (res.access_token) {
+        // Session was created immediately — go to dashboard
+        router.push('/dashboard');
+        router.refresh();
+      } else {
+        // Email verification required
+        setSuccessMessage(
+          'Account created successfully! Please check your email to verify your account, then log in.'
+        );
+        setTimeout(() => {
+          router.push('/login');
+        }, 3000);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unexpected error occurred';
       clientLogger.error('Signup error', { error: message });

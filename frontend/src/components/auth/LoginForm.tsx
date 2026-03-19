@@ -1,5 +1,7 @@
 /**
  * Login form component with validation and error handling.
+ *
+ * Authenticates via the FastAPI backend's /auth/login endpoint.
  */
 
 'use client';
@@ -7,7 +9,7 @@
 import { FormEvent, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Alert from '@/components/ui/Alert';
@@ -21,6 +23,7 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<FormFieldError[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/dashboard';
@@ -40,18 +43,7 @@ export default function LoginForm() {
     clientLogger.info('Login attempt', { email });
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        clientLogger.error('Login failed', { error: error.message });
-        setServerError(error.message);
-        return;
-      }
-
+      await login(email, password);
       clientLogger.info('Login successful', { email });
       router.push(redirect);
       router.refresh();

@@ -1,5 +1,8 @@
 /**
- * Next.js middleware for Supabase session management and route protection.
+ * Next.js middleware for route protection.
+ *
+ * Checks for the auth_token cookie set by the useAuth hook after login
+ * via the FastAPI backend.
  */
 
 import { type NextRequest } from 'next/server';
