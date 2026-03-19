@@ -69,7 +69,7 @@ async def health_check() -> HealthResponse:
     description="Create a new user account using Supabase Auth.",
     responses={400: {"model": ErrorResponse}},
 )
-async def signup(request: SignupRequest) -> AuthResponse:
+def signup(request: SignupRequest) -> AuthResponse:
     """Register a new user with Supabase Auth and create a users table entry.
 
     Args:
@@ -107,7 +107,7 @@ async def signup(request: SignupRequest) -> AuthResponse:
     description="Authenticate a user and return a JWT token.",
     responses={401: {"model": ErrorResponse}},
 )
-async def login(request: LoginRequest) -> AuthResponse:
+def login(request: LoginRequest) -> AuthResponse:
     """Authenticate an existing user and return JWT token.
 
     Args:
@@ -136,7 +136,7 @@ async def login(request: LoginRequest) -> AuthResponse:
     description="Use AI to generate a comprehensive travel plan based on the user's query.",
     responses={401: {"model": ErrorResponse}, 500: {"model": ErrorResponse}},
 )
-async def create_travel_plan(
+def create_travel_plan(
     request: TravelQueryRequest,
     current_user: dict = Depends(get_current_user),
 ) -> TravelPlanResponse:
@@ -196,7 +196,7 @@ async def create_travel_plan(
     description="Retrieve the authenticated user's past travel plan conversations.",
     responses={401: {"model": ErrorResponse}},
 )
-async def get_travel_history(
+def get_travel_history(
     current_user: dict = Depends(get_current_user),
 ) -> HistoryResponse:
     """Get the conversation history for the authenticated user.
