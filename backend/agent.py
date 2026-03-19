@@ -13,7 +13,7 @@ genai.configure(api_key=settings.GEMINI_API_KEY)
 tavily_client = TavilyClient(api_key=settings.TAVILY_API_KEY)
 
 
-def search_travel_info(query: str) -> str:
+def search_travel_info(query: str) -> tuple[str, list[dict]]:
     """Search for real-time travel information using Tavily.
 
     Searches for flights, hotels, attractions, weather, and other
@@ -23,7 +23,9 @@ def search_travel_info(query: str) -> str:
         query: The travel-related search query.
 
     Returns:
-        str: Formatted search results as a string.
+        tuple: A pair of (formatted_text, sources) where formatted_text is
+            the search results as a string for the LLM prompt and sources
+            is a list of dicts with title and url for each unique source.
 
     Raises:
         Exception: If the Tavily search fails.
@@ -56,7 +58,10 @@ def search_travel_info(query: str) -> str:
             continue
 
     if not all_results:
-        return "No search results found. Please generate a plan based on general knowledge."
+        return (
+            "No search results found. Please generate a plan based on general knowledge.",
+            [],
+        )
 
     formatted_results = []
     for i, result in enumerate(all_results, 1):
@@ -64,29 +69,39 @@ def search_travel_info(query: str) -> str:
             f"[{i}] {result['title']}\n{result['content']}\nSource: {result['url']}"
         )
 
-    return "\n\n".join(formatted_results)
+    # Deduplicate sources by URL
+    seen_urls: set[str] = set()
+    sources: list[dict] = []
+    for result in all_results:
+        url = result["url"]
+        if url and url not in seen_urls:
+            seen_urls.add(url)
+            sources.append({"title": result["title"], "url": url})
+
+    return "\n\n".join(formatted_results), sources
 
 
-def generate_travel_plan(query: str) -> str:
+def generate_travel_plan(query: str) -> tuple[str, list[dict]]:
     """Generate a comprehensive travel plan using Gemini AI and Tavily search.
 
     This function:
     1. Uses Tavily to search for real-time travel information
     2. Passes search results along with the user query to Gemini
-    3. Returns a structured travel plan
+    3. Returns a structured travel plan together with source references
 
     Args:
         query: The user's travel query (e.g., "Plan a 5 day trip to Bali on a $2000 budget").
 
     Returns:
-        str: A structured travel plan including destination overview,
-             day-by-day itinerary, estimated costs, and tips.
+        tuple: A pair of (plan_text, sources) where plan_text is a
+            structured travel plan and sources is a list of dicts with
+            title and url for each web source used.
 
     Raises:
         Exception: If plan generation fails.
     """
     # Step 1: Search for real-time travel information
-    search_results = search_travel_info(query)
+    search_results, sources = search_travel_info(query)
 
     # Step 2: Build the prompt for Gemini
     system_prompt = """You are an expert travel planning assistant. Your job is to create 
@@ -142,4 +157,4 @@ Please create a comprehensive travel plan based on the above query and search re
     if not response.text:
         raise ValueError("Gemini returned an empty response.")
 
-    return response.text
+    return response.text, sources

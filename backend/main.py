@@ -15,6 +15,7 @@ from models import (
     HistoryResponse,
     LoginRequest,
     SignupRequest,
+    Source,
     TravelPlanResponse,
     TravelQueryRequest,
 )
@@ -160,19 +161,23 @@ async def create_travel_plan(
     """
     try:
         # Generate the travel plan using AI
-        plan = generate_travel_plan(request.query)
+        plan, raw_sources = generate_travel_plan(request.query)
 
         # Save the conversation to the database
         conversation = save_conversation(
             user_id=current_user["user_id"],
             query=request.query,
             response=plan,
+            sources=raw_sources,
         )
+
+        sources = [Source(title=s["title"], url=s["url"]) for s in raw_sources]
 
         return TravelPlanResponse(
             conversation_id=conversation.get("id", ""),
             query=request.query,
             plan=plan,
+            sources=sources,
             created_at=conversation.get("created_at", ""),
         )
     except HTTPException:
@@ -213,6 +218,10 @@ async def get_travel_history(
                     id=conv["id"],
                     query=conv["query"],
                     response=conv["response"],
+                    sources=[
+                        Source(title=s["title"], url=s["url"])
+                        for s in (conv.get("sources") or [])
+                    ],
                     created_at=conv["created_at"],
                 )
                 for conv in conversations

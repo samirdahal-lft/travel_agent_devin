@@ -40,12 +40,20 @@ class TravelQueryRequest(BaseModel):
     )
 
 
+class Source(BaseModel):
+    """Model for a web source reference."""
+
+    title: str = Field(..., description="Title of the source page")
+    url: str = Field(..., description="URL of the source page")
+
+
 class TravelPlanResponse(BaseModel):
     """Response model for a generated travel plan."""
 
     conversation_id: str = Field(..., description="Unique conversation identifier")
     query: str = Field(..., description="Original user query")
     plan: str = Field(..., description="Generated travel plan")
+    sources: list[Source] = Field(default_factory=list, description="Web sources used")
     created_at: str = Field(..., description="Timestamp of plan creation")
 
 
@@ -55,6 +63,7 @@ class ConversationHistory(BaseModel):
     id: str = Field(..., description="Conversation unique identifier")
     query: str = Field(..., description="Original user query")
     response: str = Field(..., description="AI-generated travel plan")
+    sources: list[Source] = Field(default_factory=list, description="Web sources used")
     created_at: str = Field(..., description="Timestamp of conversation")
 
 
