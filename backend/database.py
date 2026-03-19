@@ -60,16 +60,10 @@ def ensure_user_exists(user_id: str, email: str) -> None:
         email: The user's email address.
     """
     client = get_supabase_admin_client()
-    existing = (
-        client.table("users")
-        .select("id")
-        .eq("id", user_id)
-        .execute()
-    )
-    if not existing.data:
-        client.table("users").insert(
-            {"id": user_id, "auth_id": user_id, "email": email}
-        ).execute()
+    client.table("users").upsert(
+        {"id": user_id, "auth_id": user_id, "email": email},
+        on_conflict="id",
+    ).execute()
 
 
 def save_conversation(user_id: str, query: str, response: str) -> dict:
