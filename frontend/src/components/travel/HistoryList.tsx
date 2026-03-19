@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import Card, { CardHeader, CardTitle } from '@/components/ui/Card';
+import SourcesSection from '@/components/travel/SourcesSection';
 import { ConversationHistory } from '@/types';
 import { formatDate, truncate } from '@/utils/format';
 import { Calendar, ChevronDown, ChevronUp, MessageSquare } from 'lucide-react';
@@ -73,6 +74,11 @@ export default function HistoryList({ conversations }: HistoryListProps) {
               <div className="prose prose-sm prose-blue max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700">
                 <ReactMarkdown>{conversation.response}</ReactMarkdown>
               </div>
+              {conversation.sources && conversation.sources.length > 0 && (
+                <div className="mt-4">
+                  <SourcesSection sources={conversation.sources} />
+                </div>
+              )}
             </div>
           )}
         </Card>

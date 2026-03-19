@@ -7,6 +7,7 @@
 import ReactMarkdown from 'react-markdown';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import SourcesSection from '@/components/travel/SourcesSection';
 import { TravelPlanResponse } from '@/types';
 import { formatDate } from '@/utils/format';
 import { ArrowLeft, Calendar, MessageSquare } from 'lucide-react';
@@ -51,6 +52,11 @@ export default function TravelPlanDisplay({
           <ReactMarkdown>{plan.plan}</ReactMarkdown>
         </div>
       </Card>
+
+      {/* Sources */}
+      {plan.sources && plan.sources.length > 0 && (
+        <SourcesSection sources={plan.sources} />
+      )}
     </div>
   );
 }

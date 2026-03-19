@@ -36,10 +36,16 @@ export interface TravelQueryRequest {
   query: string;
 }
 
+export interface Source {
+  title: string;
+  url: string;
+}
+
 export interface TravelPlanResponse {
   conversation_id: string;
   query: string;
   plan: string;
+  sources: Source[];
   created_at: string;
 }
 
@@ -47,6 +53,7 @@ export interface ConversationHistory {
   id: string;
   query: string;
   response: string;
+  sources: Source[];
   created_at: string;
 }
 

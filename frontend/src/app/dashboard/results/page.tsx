@@ -15,6 +15,7 @@ import Card from '@/components/ui/Card';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import Button from '@/components/ui/Button';
+import SourcesSection from '@/components/travel/SourcesSection';
 import Link from 'next/link';
 import { formatDate } from '@/utils/format';
 import { ArrowLeft, Calendar, MessageSquare } from 'lucide-react';
@@ -111,6 +112,13 @@ function ResultsContent() {
           <ReactMarkdown>{conversation.response}</ReactMarkdown>
         </div>
       </Card>
+
+      {/* Sources */}
+      {conversation.sources && conversation.sources.length > 0 && (
+        <div className="mt-6">
+          <SourcesSection sources={conversation.sources} />
+        </div>
+      )}
     </div>
   );
 }
