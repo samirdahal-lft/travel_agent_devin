@@ -4,7 +4,7 @@ AI-powered travel planning assistant.
 
 ## Tech Stack
 - **Backend**: FastAPI (Python)
-- **Frontend**: Streamlit
+- **Frontend**: Next js
 - **AI Model**: Google Gemini (free tier)
 - **Search Tool**: Tavily Search API
 - **Database**: Supabase (PostgreSQL)
